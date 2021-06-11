@@ -6,21 +6,14 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://laywin.github.io">
-  <title>springboot LoggingSystem | laywin</title>
+  <title>Tag: 分布书追踪 | laywin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="springboot 默认使用logback作为日志实现，可以看到在spring-boot-starter-logging中依赖了logback,springboot实际是通过判断classpath下是否存在对应的class来决定使用具体的日志实现。代码在LoggingApplicationListener中。
-LoggingApplicationListener捕获了5种类型的事件，分别是App">
-<meta property="og:type" content="article">
-<meta property="og:title" content="springboot LoggingSystem">
-<meta property="og:url" content="http://laywin.github.io/2020/06/29/springboot-日志/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="laywin">
+<meta property="og:url" content="http://laywin.github.io/tags/分布书追踪/index.html">
 <meta property="og:site_name" content="laywin">
-<meta property="og:description" content="springboot 默认使用logback作为日志实现，可以看到在spring-boot-starter-logging中依赖了logback,springboot实际是通过判断classpath下是否存在对应的class来决定使用具体的日志实现。代码在LoggingApplicationListener中。
-LoggingApplicationListener捕获了5种类型的事件，分别是App">
-<meta property="og:updated_time" content="2021-06-04T11:35:18.503Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="springboot LoggingSystem">
-<meta name="twitter:description" content="springboot 默认使用logback作为日志实现，可以看到在spring-boot-starter-logging中依赖了logback,springboot实际是通过判断classpath下是否存在对应的class来决定使用具体的日志实现。代码在LoggingApplicationListener中。
-LoggingApplicationListener捕获了5种类型的事件，分别是App">
+<meta name="twitter:title" content="laywin">
   
     <link rel="alternative" href="/atom.xml" title="laywin" type="application/atom+xml">
   
@@ -152,246 +145,71 @@ LoggingApplicationListener捕获了5种类型的事件，分别是App">
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-springboot-日志" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      springboot LoggingSystem
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2021" class="archive-year">2021</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2021/06/10/基于sleuth的trace数据生成/" class="archive-article-date">
+  	<time datetime="2021-06-10T10:21:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-06-10</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2021/06/10/基于sleuth的trace数据生成/">基于sleuth的trace数据生成</a>
     </h1>
   
 
 
   <a href="javascript:;" class="archive-article-date">
-      <i class="icon-smile icon"></i> 阅读数:<span id="/2020/06/29/springboot-日志/" class="pageViews">0</span>次
+      <i class="icon-smile icon"></i> 阅读数:<span id="/2021/06/10/基于sleuth的trace数据生成/" class="pageViews">0</span>次
   </a>
 
-        
-        <a href="/2020/06/29/springboot-日志/" class="archive-article-date">
-  	<time datetime="2020-06-29T07:29:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-29</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>springboot 默认使用logback作为日志实现，可以看到在spring-boot-starter-logging中依赖了logback,springboot实际是通过判断classpath下是否存在对应的class来决定使用具体的日志实现。代码在LoggingApplicationListener中。</p>
-<p>LoggingApplicationListener捕获了5种类型的事件，分别是ApplicationStartingEvent，ApplicationEnvironmentPreparedEvent，ApplicationPreparedEvent，ContextClosedEvent，ApplicationFailedEvent。而日志系统的初始化则在相应的事件处理方法中完成的。下面我们看一下具体的事件处理方法。</p>
-<a id="more"></a>
-<ul>
-<li>ApplicationStartingEvent（应用程序启动事件）</li>
-</ul>
-<p>当springboot启动时，框架会默认选择对应的日志实现，前面也说到了，是通过判断classpath下是否存在相关的class来进行判断，如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// LoggingApplicationListener.class</span></div><div class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onApplicationStartingEvent</span><span class="params">(ApplicationStartingEvent event)</span> </span>&#123;</div><div class="line">		<span class="keyword">this</span>.loggingSystem = LoggingSystem.get(event.getSpringApplication().getClassLoader());</div><div class="line">		<span class="keyword">this</span>.loggingSystem.beforeInitialize();</div><div class="line">	&#125;</div><div class="line"></div><div class="line"><span class="comment">// LoggingSystem.class</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SYSTEM_PROPERTY = LoggingSystem.class.getName();</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Map&lt;String, String&gt; SYSTEMS;</div><div class="line"></div><div class="line">	<span class="keyword">static</span> &#123;</div><div class="line">		Map&lt;String, String&gt; systems = <span class="keyword">new</span> LinkedHashMap&lt;&gt;();</div><div class="line">		systems.put(<span class="string">"ch.qos.logback.core.Appender"</span>, <span class="string">"org.springframework.boot.logging.logback.LogbackLoggingSystem"</span>);</div><div class="line">		systems.put(<span class="string">"org.apache.logging.log4j.core.impl.Log4jContextFactory"</span>,</div><div class="line">				<span class="string">"org.springframework.boot.logging.log4j2.Log4J2LoggingSystem"</span>);</div><div class="line">		systems.put(<span class="string">"java.util.logging.LogManager"</span>, <span class="string">"org.springframework.boot.logging.java.JavaLoggingSystem"</span>);</div><div class="line">		SYSTEMS = Collections.unmodifiableMap(systems);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> LoggingSystem <span class="title">get</span><span class="params">(ClassLoader classLoader)</span> </span>&#123;</div><div class="line">		String loggingSystem = System.getProperty(SYSTEM_PROPERTY);</div><div class="line">		<span class="keyword">if</span> (StringUtils.hasLength(loggingSystem)) &#123;</div><div class="line">			<span class="keyword">if</span> (NONE.equals(loggingSystem)) &#123;</div><div class="line">				<span class="keyword">return</span> <span class="keyword">new</span> NoOpLoggingSystem();</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">return</span> get(classLoader, loggingSystem);</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span> SYSTEMS.entrySet().stream().filter((entry) -&gt; ClassUtils.isPresent(entry.getKey(), classLoader))</div><div class="line">				.map((entry) -&gt; get(classLoader, entry.getValue())).findFirst()</div><div class="line">				.orElseThrow(() -&gt; <span class="keyword">new</span> IllegalStateException(<span class="string">"No suitable logging system located"</span>));</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
-<p>如上所示，收到应用程序启动的事件后，会创建对应的LoggingSystem, LoggingSystem首先会通过system property来进行查找是否有相关配置，否则根据默认的方式来进行实例化。</p>
-<p>loggingSystem 的beforeInitialize则主要创建了对应的loggerContext</p>
-<ul>
-<li>ApplicationEnvironmentPreparedEvent (应用程序环境准备事件)</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onApplicationEnvironmentPreparedEvent</span><span class="params">(ApplicationEnvironmentPreparedEvent event)</span> </span>&#123;</div><div class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.loggingSystem == <span class="keyword">null</span>) &#123;</div><div class="line">		<span class="keyword">this</span>.loggingSystem = LoggingSystem.get(event.getSpringApplication().getClassLoader());</div><div class="line">	&#125;</div><div class="line">	initialize(event.getEnvironment(), event.getSpringApplication().getClassLoader());</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Initialize the logging system according to preferences expressed through the</div><div class="line"> * &#123;<span class="doctag">@link</span> Environment&#125; and the classpath.</div><div class="line"> * <span class="doctag">@param</span> environment the environment</div><div class="line"> * <span class="doctag">@param</span> classLoader the classloader</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(ConfigurableEnvironment environment, ClassLoader classLoader)</span> </span>&#123;</div><div class="line">	<span class="keyword">new</span> LoggingSystemProperties(environment).apply();</div><div class="line">	<span class="keyword">this</span>.logFile = LogFile.get(environment);</div><div class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.logFile != <span class="keyword">null</span>) &#123;</div><div class="line">		<span class="keyword">this</span>.logFile.applyToSystemProperties();</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">this</span>.loggerGroups = <span class="keyword">new</span> LoggerGroups(DEFAULT_GROUP_LOGGERS);</div><div class="line">	initializeEarlyLoggingLevel(environment);</div><div class="line">	initializeSystem(environment, <span class="keyword">this</span>.loggingSystem, <span class="keyword">this</span>.logFile);</div><div class="line">	initializeFinalLoggingLevels(environment, <span class="keyword">this</span>.loggingSystem);</div><div class="line">	registerShutdownHookIfNecessary(environment, <span class="keyword">this</span>.loggingSystem);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这个阶段主要是通过相关的配置来初始化LoggingSystem,配置主要来自于Environment和classpath的日志配置文件</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile)</span> </span>&#123;</div><div class="line">	<span class="keyword">if</span> (StringUtils.hasLength(configLocation)) &#123;</div><div class="line">		initializeWithSpecificConfig(initializationContext, configLocation, logFile);</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line">	initializeWithConventions(initializationContext, logFile);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如上所示。如果配置的有configLocation，则通过该地址来进行日志配置，否则根据默认的规则进行配置，默认的规则如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initializeWithConventions</span><span class="params">(LoggingInitializationContext initializationContext, LogFile logFile)</span> </span>&#123;</div><div class="line">	String config = getSelfInitializationConfig();</div><div class="line">	<span class="keyword">if</span> (config != <span class="keyword">null</span> &amp;&amp; logFile == <span class="keyword">null</span>) &#123;</div><div class="line">		<span class="comment">// self initialization has occurred, reinitialize in case of property changes</span></div><div class="line">		reinitialize(initializationContext);</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (config == <span class="keyword">null</span>) &#123;</div><div class="line">		config = getSpringInitializationConfig();</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (config != <span class="keyword">null</span>) &#123;</div><div class="line">		loadConfiguration(initializationContext, config, logFile);</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line">	loadDefaults(initializationContext, logFile);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>以logback为例，如果根据标准的日志配置文件名（”logback-test.groovy”, “logback-test.xml”, “logback.groovy”, “logback.xml”）没有找到，则根据spring的日志配置文件名来找（”logback-test-spring.groovy”, “logback-test-spring.xml”, “logback-spring.groovy”, “logback-spring.xml”）,如果都没找到，就通过默认的方式来进行日志配置。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">apply</span><span class="params">(LogbackConfigurator config)</span> </span>&#123;</div><div class="line">	<span class="keyword">synchronized</span> (config.getConfigurationLock()) &#123;</div><div class="line">		base(config);</div><div class="line">		Appender&lt;ILoggingEvent&gt; consoleAppender = consoleAppender(config);</div><div class="line">		<span class="keyword">if</span> (<span class="keyword">this</span>.logFile != <span class="keyword">null</span>) &#123;</div><div class="line">			Appender&lt;ILoggingEvent&gt; fileAppender = fileAppender(config, <span class="keyword">this</span>.logFile.toString());</div><div class="line">			config.root(Level.INFO, consoleAppender, fileAppender);</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">else</span> &#123;</div><div class="line">			config.root(Level.INFO, consoleAppender);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>默认的方式会创建一个控制台的Appender</p>
-<ul>
-<li>ApplicationPreparedEvent（应用程序准备事件）</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onApplicationPreparedEvent</span><span class="params">(ApplicationPreparedEvent event)</span> </span>&#123;</div><div class="line">	ConfigurableListableBeanFactory beanFactory = event.getApplicationContext().getBeanFactory();</div><div class="line">	<span class="keyword">if</span> (!beanFactory.containsBean(LOGGING_SYSTEM_BEAN_NAME)) &#123;</div><div class="line">		beanFactory.registerSingleton(LOGGING_SYSTEM_BEAN_NAME, <span class="keyword">this</span>.loggingSystem);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.logFile != <span class="keyword">null</span> &amp;&amp; !beanFactory.containsBean(LOG_FILE_BEAN_NAME)) &#123;</div><div class="line">		beanFactory.registerSingleton(LOG_FILE_BEAN_NAME, <span class="keyword">this</span>.logFile);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.loggerGroups != <span class="keyword">null</span> &amp;&amp; !beanFactory.containsBean(LOGGER_GROUPS_BEAN_NAME)) &#123;</div><div class="line">		beanFactory.registerSingleton(LOGGER_GROUPS_BEAN_NAME, <span class="keyword">this</span>.loggerGroups);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如上所示，应用程序准备事件会注册相应的Bean</p>
-<ul>
-<li><p>ContextClosedEvent (上下文关闭事件)</p>
-</li>
-<li><p>ApplicationFailedEvent（应用程序启动失败事件）</p>
-</li>
-</ul>
-<p>上下文关闭事件和应用程序启动失败事件都会对loggingSystem进行清理</p>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>有鸡腿吃吗<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/img/Wechat.jpeg">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">springboot</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">apm</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">日志</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">分布书追踪</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://laywin.github.io/2020/06/29/springboot-日志/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2021/05/26/为什么我的日志输入无效/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          为什么我的日志输入无效
-        
-      </div>
-    </a>
   
   
-    <a href="/2020/06/19/自定义starter/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">自定义 springboot starter</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
+    
 
 
-
-  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
-<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-
-if(true){
-	var gitalk = new Gitalk({
-  	clientID: '69a060f8a4ae1903c26d',
-  	clientSecret: 'c02f9a5193d29fc957b5c0dbd0900ae73fc5dd7c',
-  	repo: 'mycomments',
-  	owner: 'laywin',
-  	admin: ['laywin'],
-  	id: 'Mon Jun 29 2020 15:29:50 GMT+0800',
-  	distractionFreeMode: 'true'
-})
-gitalk.render('gitalk-container') 
-}
-</script>
-  
-  
           </div>
         </div>
       </div>
@@ -412,9 +230,9 @@ gitalk.render('gitalk-container')
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
+		isPost: false,
 		isArchive: false,
-		isTag: false,
+		isTag: true,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://laywin.github.io/"/>
-  <updated>2021-06-10T13:06:38.972Z</updated>
+  <updated>2021-06-11T07:10:41.789Z</updated>
   <id>http://laywin.github.io/</id>
   
   <author>
@@ -16,11 +16,48 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>sleuth集成zipkin</title>
+    <link href="http://laywin.github.io/2021/06/11/sleuth%E9%9B%86%E6%88%90zipkin/"/>
+    <id>http://laywin.github.io/2021/06/11/sleuth集成zipkin/</id>
+    <published>2021-06-11T06:53:37.000Z</published>
+    <updated>2021-06-11T07:10:41.789Z</updated>
+    
+    <content type="html"><![CDATA[<p>在[<a href="https://laywin.github.io/2021/06/10/基于sleuth的trace数据生成/">基于sleuth的trace数据生成</a>]中，我们生成了trace数据，接下来为了直观的展示链路追踪，我们需要将trace数据推送到zipkin中，过程很简单，第一步将zipkin搭建起来，第二步推送数据到zipkin.</p>
+<h3 id="zipkin搭建"><a href="#zipkin搭建" class="headerlink" title="zipkin搭建"></a>zipkin搭建</h3><blockquote>
+<p>docker run -d -p 9411:9411 openzipkin/zipkin</p>
+</blockquote>
+<p>启动之后，访问 <a href="http://localhost:9411/，如下：" target="_blank" rel="external">http://localhost:9411/，如下：</a></p>
+<p><img src="/2021/06/11/sleuth集成zipkin/1.png" alt=""></p>
+<h3 id="修改trace数据推送配置"><a href="#修改trace数据推送配置" class="headerlink" title="修改trace数据推送配置"></a>修改trace数据推送配置</h3><ul>
+<li><p>添加sleuth集成zipkin的依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</div><div class="line">    &lt;artifactId&gt;spring-cloud-sleuth-zipkin&lt;/artifactId&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>添加推送配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">spring.zipkin.baseUrl: http://localhost:9411/</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>重新请求endingpoint, 然后查询zipkin</p>
+<p><img src="/2021/06/11/sleuth集成zipkin/2.png" alt=""></p>
+<p><img src="/2021/06/11/sleuth集成zipkin/3.png" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在[&lt;a href=&quot;https://laywin.github.io/2021/06/10/基于sleuth的trace数据生成/&quot;&gt;基于sleuth的trace数据生成&lt;/a&gt;]中，我们生成了trace数据，接下来为了直观的展示链路追踪，我们需要将trace数据推送到z
+    
+    </summary>
+    
+    
+      <category term="zipkin" scheme="http://laywin.github.io/tags/zipkin/"/>
+    
+  </entry>
+  
+  <entry>
     <title>基于sleuth的trace数据生成</title>
     <link href="http://laywin.github.io/2021/06/10/%E5%9F%BA%E4%BA%8Esleuth%E7%9A%84trace%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/"/>
     <id>http://laywin.github.io/2021/06/10/基于sleuth的trace数据生成/</id>
     <published>2021-06-10T10:21:02.000Z</published>
-    <updated>2021-06-10T13:06:38.972Z</updated>
+    <updated>2021-06-11T07:11:08.699Z</updated>
     
     <content type="html"><![CDATA[<h3 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h3><p>只需要简单的几个步骤就能产生相应的trace数据</p>
 <ul>
@@ -89,6 +126,10 @@
     
     </summary>
     
+    
+      <category term="apm" scheme="http://laywin.github.io/tags/apm/"/>
+    
+      <category term="分布书追踪" scheme="http://laywin.github.io/tags/%E5%88%86%E5%B8%83%E4%B9%A6%E8%BF%BD%E8%B8%AA/"/>
     
   </entry>
   

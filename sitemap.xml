@@ -2,16 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://laywin.github.io/2021/05/26/mybatis-sql%E8%BE%93%E5%87%BA%E5%B0%8F%E6%8F%92%E6%9B%B2/</loc>
+    <loc>http://laywin.github.io/2021/06/10/%E5%9F%BA%E4%BA%8Esleuth%E7%9A%84trace%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</loc>
     
-    <lastmod>2021-06-10T13:07:54.843Z</lastmod>
+    <lastmod>2021-06-11T07:11:08.699Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://laywin.github.io/2021/06/10/%E5%9F%BA%E4%BA%8Esleuth%E7%9A%84trace%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</loc>
+    <loc>http://laywin.github.io/2021/06/11/sleuth%E9%9B%86%E6%88%90zipkin/</loc>
     
-    <lastmod>2021-06-10T13:06:38.972Z</lastmod>
+    <lastmod>2021-06-11T07:10:41.789Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://laywin.github.io/2021/05/26/mybatis-sql%E8%BE%93%E5%87%BA%E5%B0%8F%E6%8F%92%E6%9B%B2/</loc>
+    
+    <lastmod>2021-06-10T13:07:54.843Z</lastmod>
     
   </url>
   
