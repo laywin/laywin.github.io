@@ -24,7 +24,7 @@ redis 的事务redis的事务相当于将多个命令放到一个队列中，然
 隔离性
 
 事务中的所有命令都被序列化并且被顺序执行，如果一个r">
-<meta property="og:updated_time" content="2021-06-17T14:50:49.929Z">
+<meta property="og:updated_time" content="2021-06-17T14:55:09.494Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="redis事务&cas">
 <meta name="twitter:description" content="以下内容来自于对 https://redis.io/topics/transactions 的总结.
@@ -220,8 +220,8 @@ redis 的事务redis的事务相当于将多个命令放到一个队列中，然
 <p>第二种错误redis会执行所有的指令，即使执行的过程当中一些指令实行失败了。</p>
 <h4 id="为什么redis不支持回滚"><a href="#为什么redis不支持回滚" class="headerlink" title="为什么redis不支持回滚"></a>为什么redis不支持回滚</h4><p>有两个原因redis团队觉得不应该支持回滚</p>
 <ul>
-<li>redis 指令在执行EXEC之后报错主要有两个原因，一个是语法错误，一个是类型错误，这应该被认为是程序的bug，应该在测试阶段解决，而不是在生产中出现，这种错误和关系型数据库的事务失败还有些区别，后者大多数情况是业务上的条件不满足，即便redis支持回滚也解决不了问题。</li>
-<li>因为redis不支持回滚而更加简单和快速</li>
+<li>redis 指令在执行EXEC之后报错主要有两个原因，一个是语法错误，一个是类型错误，这两种错误应该被认为是程序的bug，应该在测试阶段解决，而不是在生产中出现，这种错误和关系型数据库的事务失败还有些区别，后者大多数情况是业务上的条件不满足。最后，即便redis支持回滚也解决不了问题。</li>
+<li>redis不支持回滚而更加简单和快速</li>
 </ul>
 <h4 id="CAS-语意"><a href="#CAS-语意" class="headerlink" title="CAS 语意"></a>CAS 语意</h4><p>Redis 事务相当于给指令的执行加了一把独占锁，如果事务中执行的指令较多，必然会使得并发性能减弱，cas(check-and-set)则是一种更好的执行方式。redis中cas的执行过程是：WATCH…..MULTI….EXEC, 先watch某个key,如果这个key的值在EXEC指令执行之前被修改了，那么这个事务会失败，redis会返回一个空的值。</p>
 
@@ -556,7 +556,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">redis事务</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">cas</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">日志</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">zipkin</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -565,18 +577,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">apm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">zipkin</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">redis事务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">cas</a>
               </li>
             
             <div class="clearfix"></div>

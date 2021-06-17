@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://laywin.github.io/"/>
-  <updated>2021-06-17T14:50:49.929Z</updated>
+  <updated>2021-06-17T14:55:09.494Z</updated>
   <id>http://laywin.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://laywin.github.io/2021/06/17/redis%E4%BA%8B%E5%8A%A1-cas/"/>
     <id>http://laywin.github.io/2021/06/17/redis事务-cas/</id>
     <published>2021-06-17T12:32:58.000Z</published>
-    <updated>2021-06-17T14:50:49.929Z</updated>
+    <updated>2021-06-17T14:55:09.494Z</updated>
     
     <content type="html"><![CDATA[<p>以下内容来自于对 <a href="https://redis.io/topics/transactions" target="_blank" rel="external">https://redis.io/topics/transactions</a> 的总结.</p>
 <h3 id="redis-的事务"><a href="#redis-的事务" class="headerlink" title="redis 的事务"></a>redis 的事务</h3><p>redis的事务相当于将多个命令放到一个队列中，然后在执行，执行的过程中出现错误不进行回滚. 其中MULTI指令表示事务的开始，在MULTI到EXEC之间的指令都会入队，EXEC的执行会将入队的指令拿出来顺序执行。</p>
@@ -53,8 +53,8 @@
 <p>第二种错误redis会执行所有的指令，即使执行的过程当中一些指令实行失败了。</p>
 <h4 id="为什么redis不支持回滚"><a href="#为什么redis不支持回滚" class="headerlink" title="为什么redis不支持回滚"></a>为什么redis不支持回滚</h4><p>有两个原因redis团队觉得不应该支持回滚</p>
 <ul>
-<li>redis 指令在执行EXEC之后报错主要有两个原因，一个是语法错误，一个是类型错误，这应该被认为是程序的bug，应该在测试阶段解决，而不是在生产中出现，这种错误和关系型数据库的事务失败还有些区别，后者大多数情况是业务上的条件不满足，即便redis支持回滚也解决不了问题。</li>
-<li>因为redis不支持回滚而更加简单和快速</li>
+<li>redis 指令在执行EXEC之后报错主要有两个原因，一个是语法错误，一个是类型错误，这两种错误应该被认为是程序的bug，应该在测试阶段解决，而不是在生产中出现，这种错误和关系型数据库的事务失败还有些区别，后者大多数情况是业务上的条件不满足。最后，即便redis支持回滚也解决不了问题。</li>
+<li>redis不支持回滚而更加简单和快速</li>
 </ul>
 <h4 id="CAS-语意"><a href="#CAS-语意" class="headerlink" title="CAS 语意"></a>CAS 语意</h4><p>Redis 事务相当于给指令的执行加了一把独占锁，如果事务中执行的指令较多，必然会使得并发性能减弱，cas(check-and-set)则是一种更好的执行方式。redis中cas的执行过程是：WATCH…..MULTI….EXEC, 先watch某个key,如果这个key的值在EXEC指令执行之前被修改了，那么这个事务会失败，redis会返回一个空的值。</p>
 ]]></content>
