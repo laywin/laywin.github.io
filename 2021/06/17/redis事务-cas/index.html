@@ -6,14 +6,33 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://laywin.github.io">
-  <title>Tag: 源码分析 | laywin</title>
+  <title>redis事务&amp;cas | laywin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="laywin">
-<meta property="og:url" content="http://laywin.github.io/tags/源码分析/index.html">
+  <meta name="description" content="以下内容来自于对 https://redis.io/topics/transactions 的总结.
+redis 的事务redis的事务相当于将多个命令放到一个队列中，然后在执行，执行的过程中出现错误不进行回滚. 其中MULTI指令表示事务的开始，在MULTI到EXEC之间的指令都会入队，EXEC的执行会将入队的指令拿出来顺序执行。
+
+隔离性
+
+事务中的所有命令都被序列化并且被顺序执行，如果一个r">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis事务&cas">
+<meta property="og:url" content="http://laywin.github.io/2021/06/17/redis事务-cas/index.html">
 <meta property="og:site_name" content="laywin">
+<meta property="og:description" content="以下内容来自于对 https://redis.io/topics/transactions 的总结.
+redis 的事务redis的事务相当于将多个命令放到一个队列中，然后在执行，执行的过程中出现错误不进行回滚. 其中MULTI指令表示事务的开始，在MULTI到EXEC之间的指令都会入队，EXEC的执行会将入队的指令拿出来顺序执行。
+
+隔离性
+
+事务中的所有命令都被序列化并且被顺序执行，如果一个r">
+<meta property="og:updated_time" content="2021-06-17T14:50:49.929Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="laywin">
+<meta name="twitter:title" content="redis事务&cas">
+<meta name="twitter:description" content="以下内容来自于对 https://redis.io/topics/transactions 的总结.
+redis 的事务redis的事务相当于将多个命令放到一个队列中，然后在执行，执行的过程中出现错误不进行回滚. 其中MULTI指令表示事务的开始，在MULTI到EXEC之间的指令都会入队，EXEC的执行会将入队的指令拿出来顺序执行。
+
+隔离性
+
+事务中的所有命令都被序列化并且被顺序执行，如果一个r">
   
     <link rel="alternative" href="/atom.xml" title="laywin" type="application/atom+xml">
   
@@ -145,71 +164,239 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-redis事务-cas" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/06/15/spring-boot-autoconfiguration/" class="archive-article-date">
-  	<time datetime="2020-06-15T09:43:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-15</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/06/15/spring-boot-autoconfiguration/">springboot autoconfiguration</a>
+    <h1 class="article-title" itemprop="name">
+      redis事务&amp;cas
     </h1>
   
 
 
   <a href="javascript:;" class="archive-article-date">
-      <i class="icon-smile icon"></i> 阅读数:<span id="/2020/06/15/spring-boot-autoconfiguration/" class="pageViews">0</span>次
+      <i class="icon-smile icon"></i> 阅读数:<span id="/2021/06/17/redis事务-cas/" class="pageViews">0</span>次
   </a>
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2021/06/17/redis事务-cas/" class="archive-article-date">
+  	<time datetime="2021-06-17T12:32:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-06-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>以下内容来自于对 <a href="https://redis.io/topics/transactions" target="_blank" rel="external">https://redis.io/topics/transactions</a> 的总结.</p>
+<h3 id="redis-的事务"><a href="#redis-的事务" class="headerlink" title="redis 的事务"></a>redis 的事务</h3><p>redis的事务相当于将多个命令放到一个队列中，然后在执行，执行的过程中出现错误不进行回滚. 其中MULTI指令表示事务的开始，在MULTI到EXEC之间的指令都会入队，EXEC的执行会将入队的指令拿出来顺序执行。</p>
+<ul>
+<li><p>隔离性</p>
+<blockquote>
+<p>事务中的所有命令都被序列化并且被顺序执行，如果一个redis事务的正在执行过程当中，那么它不会同时执行其他客户端的请求。</p>
+</blockquote>
+</li>
+<li><p>原子性</p>
+<blockquote>
+<p>要么所有的都执行，要么一个指令都不执行，如果一个客户端在调用EXEC指令之前丢失连接，那么什么都不会执行，如果EXEC指令被调用，那么所有指令都会被执行。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="事务执行过程中的错误"><a href="#事务执行过程中的错误" class="headerlink" title="事务执行过程中的错误"></a>事务执行过程中的错误</h4><p>在一个事务期间，可能遇到两种类型的错误</p>
+<ul>
+<li><p>失败入队的指令</p>
+<blockquote>
+<p>某些指令在执行EXEC之前入队出错，比如错误的参数个数，指令名称等</p>
+</blockquote>
+</li>
+<li><p>执行EXEC指令之后失败</p>
+<blockquote>
+<p>比如对一个string的value执行list的操作（值类型问题）</p>
+</blockquote>
+</li>
+</ul>
+<p>第一种错误大多数客户端会丢弃入队的指令并且终止事务，如果客户端不管指令入队时发生的错误，还是将队列中的指令发送到了服务器，那么redis针对不同的版本有不同的处理方式，在redis 2.6.5之前会执行成功入队的指令，在2.6.5之后，服务器端会记住那儿有一个错，并会拒绝执行对应的事务。</p>
+<p>第二种错误redis会执行所有的指令，即使执行的过程当中一些指令实行失败了。</p>
+<h4 id="为什么redis不支持回滚"><a href="#为什么redis不支持回滚" class="headerlink" title="为什么redis不支持回滚"></a>为什么redis不支持回滚</h4><p>有两个原因redis团队觉得不应该支持回滚</p>
+<ul>
+<li>redis 指令在执行EXEC之后报错主要有两个原因，一个是语法错误，一个是类型错误，这应该被认为是程序的bug，应该在测试阶段解决，而不是在生产中出现，这种错误和关系型数据库的事务失败还有些区别，后者大多数情况是业务上的条件不满足，即便redis支持回滚也解决不了问题。</li>
+<li>因为redis不支持回滚而更加简单和快速</li>
+</ul>
+<h4 id="CAS-语意"><a href="#CAS-语意" class="headerlink" title="CAS 语意"></a>CAS 语意</h4><p>Redis 事务相当于给指令的执行加了一把独占锁，如果事务中执行的指令较多，必然会使得并发性能减弱，cas(check-and-set)则是一种更好的执行方式。redis中cas的执行过程是：WATCH…..MULTI….EXEC, 先watch某个key,如果这个key的值在EXEC指令执行之前被修改了，那么这个事务会失败，redis会返回一个空的值。</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>有鸡腿吃吗<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/img/Wechat.jpeg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">springboot</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">redis事务</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">源码分析</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">cas</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://laywin.github.io/2021/06/17/redis事务-cas/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2021/06/11/sleuth集成zipkin/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">sleuth集成zipkin</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
+
+  <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: '69a060f8a4ae1903c26d',
+  	clientSecret: 'c02f9a5193d29fc957b5c0dbd0900ae73fc5dd7c',
+  	repo: 'mycomments',
+  	owner: 'laywin',
+  	admin: ['laywin'],
+  	id: 'Thu Jun 17 2021 20:32:58 GMT+0800',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+  
+  
           </div>
         </div>
       </div>
@@ -230,9 +417,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
