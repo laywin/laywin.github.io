@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://laywin.github.io/"/>
-  <updated>2023-10-08T14:43:15.357Z</updated>
+  <updated>2023-11-05T14:45:20.515Z</updated>
   <id>http://laywin.github.io/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>seata分布式事务</title>
+    <link href="http://laywin.github.io/2023/11/05/seata%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/"/>
+    <id>http://laywin.github.io/2023/11/05/seata分布式事务/</id>
+    <published>2023-11-05T14:31:42.000Z</published>
+    <updated>2023-11-05T14:45:20.515Z</updated>
+    
+    <content type="html"><![CDATA[<p>seata是一个两阶段的分布式事务，由TM, TC, RM 构成，全局事务由TM发起，一阶段RM注册分支事务到TC, 二阶段由TM决定根据事务执行情况进行提交或者回滚（TC 后台通过全局事务是否超时，也能决定是否进行回滚）</p><h3 id="AT模式的优缺点"><a href="#AT模式的优缺点" class="headerlink" title="AT模式的优缺点"></a>AT模式的优缺点</h3><ul><li><p>优点</p><p>接入成本低，代码侵入性弱，只需要加个注解搞定，写隔离，强一致性。</p></li><li><p>缺点</p><p>写隔离，强一致性会要求在全局事务执行期间锁定对应的事务资源, 对热点数据的锁定会导致系统并发性能衰退，所以AT模式不适合长事务。</p></li></ul><h3 id="TM相关事务请求"><a href="#TM相关事务请求" class="headerlink" title="TM相关事务请求"></a>TM相关事务请求</h3><h3 id="GlobalBeginRequest"><a href="#GlobalBeginRequest" class="headerlink" title="GlobalBeginRequest"></a>GlobalBeginRequest</h3><p>TM：发起请求，生成XID</p><p>TC:  创建globalSession</p><h3 id="GlobalCommitRequest"><a href="#GlobalCommitRequest" class="headerlink" title="GlobalCommitRequest"></a>GlobalCommitRequest</h3><p>TM：发起请求，提交全局事务</p><p>TC: 查找全局事务，判断是否超时，设置支持异步提交，设置异步提交的标识，返回提交状态</p><h3 id="GlobalRollbackRequest"><a href="#GlobalRollbackRequest" class="headerlink" title="GlobalRollbackRequest"></a>GlobalRollbackRequest</h3><p>TM: 当在全局事务执行中，出现异常时，发起全局事务回滚</p><p>TC: 根据全局事务查找对应的分支事务，执行branchRollbackRequest.</p><h3 id="RM-相关事务请求"><a href="#RM-相关事务请求" class="headerlink" title="RM 相关事务请求"></a>RM 相关事务请求</h3><h4 id="BranchRegisterRequest"><a href="#BranchRegisterRequest" class="headerlink" title="BranchRegisterRequest"></a>BranchRegisterRequest</h4><p>RM:  在RM本地事务中，当connection提交的时候会去注册分支事务</p><p>TC: 根据rowkey生成对应的锁记录，实现写隔离</p><h4 id="BranchRollbackRequest"><a href="#BranchRollbackRequest" class="headerlink" title="BranchRollbackRequest"></a>BranchRollbackRequest</h4><p>RM: RM处理TC下发的 BranchRollbackRequest请求，删除本地的undolog日志</p><p>TC: TC接受TM的rollback的决议或者判断全局事务已超时后，发起分支事务回滚</p><h4 id="branchCommitRequest"><a href="#branchCommitRequest" class="headerlink" title="branchCommitRequest"></a>branchCommitRequest</h4><p>RM: 由TC发起，异步删除undolog日志，实际的做法是将二阶段提交的上下文放到队列中，定时任务会定时获取队列中的上下文来删除undolog日志</p><p>TC: 当收到TM的全局事务提交请求后，发起分支事务提交</p><h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><h4 id="RowKey-组成"><a href="#RowKey-组成" class="headerlink" title="RowKey 组成"></a>RowKey 组成</h4><p>xid:transactionId:branchID:tableName:pk:resourceId</p><h3 id="判断锁是否获取成功"><a href="#判断锁是否获取成功" class="headerlink" title="判断锁是否获取成功"></a>判断锁是否获取成功</h3><ul><li>判断rowkey是否能查询到锁的数据，如果查询到数据, 判断XID是否一致，如果一致，说明重入锁</li><li>如果没有查询到数据，说明没有加锁，插入数据，表占用锁</li></ul><h3 id="生成undolog日志"><a href="#生成undolog日志" class="headerlink" title="生成undolog日志"></a>生成undolog日志</h3><h4 id="生成时机"><a href="#生成时机" class="headerlink" title="生成时机"></a>生成时机</h4><p>preparedstatement代理执行的时候，会生成beforeImage&amp;afterImage.</p><ul><li><p>beforeImage</p><p>回滚语句</p></li><li><p>afterImage</p><p>回滚的时候用来对比事务相关的数据有没发生变化，如果发生改变，不能直接回滚</p></li></ul><h4 id="beforeImage-amp-AfterImage生成逻辑"><a href="#beforeImage-amp-AfterImage生成逻辑" class="headerlink" title="beforeImage&amp;AfterImage生成逻辑"></a>beforeImage&amp;AfterImage生成逻辑</h4><ul><li><p>delete</p><ul><li><p>before</p><p>反向生成用于回滚的insert语句</p></li><li><p>after</p><p>Empty</p></li></ul></li><li><p>Update</p><ul><li><p>before</p><p>将更新前的数据select出来用来回滚</p></li><li><p>after</p><p>更新后的数据select出来用来在回滚的时候看数据是否发生了变化</p></li></ul></li><li><p>Insert</p><ul><li><p>before</p><p>empty</p></li><li><p>after</p><p>生成一条delete语句</p></li></ul></li><li><p>select</p><p>无镜像语句</p></li></ul><h4 id="seata-持久化undolog"><a href="#seata-持久化undolog" class="headerlink" title="seata 持久化undolog"></a>seata 持久化undolog</h4><ol><li>对undolog进行序列化</li><li>对序列化的结果进行压缩</li><li>持久化到数据库</li></ol><h3 id="三层代理"><a href="#三层代理" class="headerlink" title="三层代理"></a>三层代理</h3><ul><li><p>DataSourceProxy</p></li><li><p>ConnectionProxy</p></li><li><p>StatementProxy</p></li></ul><h3 id="正常流程"><a href="#正常流程" class="headerlink" title="正常流程"></a>正常流程</h3><ul><li>提交</li></ul><p>当请求链路调用完成后，发起方通知TC提交或回滚分布式事务，进入二阶段调用流程，此时，TC会根据之前注册的分布式事务回调到对应的参与者去执行对应资源的第二阶段. (事务提交的时候会通过XID查询到全局事务，并加锁,关闭，目的是防止该事务后续还有分支继续注册上来)</p><ul><li>提交过程</li></ul><p>AT 模式下直接将事务状态由begining 变为 asyncComming，然后查询出待提交的全局事务日志进行提交，如果全局事务提交成功，则会释放全局锁，并删除事务日志(AT模式是异步的事物提交，因为一阶段相关的数据已经完成落库)。</p><ul><li>回滚</li></ul><p>回滚失败，不会释放锁</p><p><img src="https://gitee.com/laywin/projectpic/blob/master/seata001.png" alt="image-20231105223513558"></p><h3 id="隔离"><a href="#隔离" class="headerlink" title="隔离"></a>隔离</h3><p><img src="https://gitee.com/laywin/projectpic/blob/master/seata002.png" alt="image-20231105223532965"></p><p>写隔离主要是通过全局锁进行隔离，注册分支事务的时候会尝试获取全局锁，全局锁获取成功，提交本地事务</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;seata是一个两阶段的分布式事务，由TM, TC, RM 构成，全局事务由TM发起，一阶段RM注册分支事务到TC, 二阶段由TM决定根据事务执行情况进行提交或者回滚（TC 后台通过全局事务是否超时，也能决定是否进行回滚）&lt;/p&gt;
+&lt;h3 id=&quot;AT模式的优缺点&quot;&gt;&lt;a 
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>redis延迟队列</title>
