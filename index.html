@@ -182,17 +182,35 @@
 <p>写隔离，强一致性会要求在全局事务执行期间锁定对应的事务资源, 对热点数据的锁定会导致系统并发性能衰退，所以AT模式不适合长事务。</p>
 </li>
 </ul>
-<h3 id="TM相关事务请求"><a href="#TM相关事务请求" class="headerlink" title="TM相关事务请求"></a>TM相关事务请求</h3><h3 id="GlobalBeginRequest"><a href="#GlobalBeginRequest" class="headerlink" title="GlobalBeginRequest"></a>GlobalBeginRequest</h3><p>TM：发起请求，生成XID</p>
+<h3 id="TM相关事务请求"><a href="#TM相关事务请求" class="headerlink" title="TM相关事务请求"></a>TM相关事务请求</h3><ul>
+<li>GlobalBeginRequest</li>
+</ul>
+<p>TM：发起请求，生成XID</p>
 <p>TC:  创建globalSession</p>
-<h3 id="GlobalCommitRequest"><a href="#GlobalCommitRequest" class="headerlink" title="GlobalCommitRequest"></a>GlobalCommitRequest</h3><p>TM：发起请求，提交全局事务</p>
+<ul>
+<li>GlobalCommitRequest</li>
+</ul>
+<p>TM：发起请求，提交全局事务</p>
 <p>TC: 查找全局事务，判断是否超时，设置支持异步提交，设置异步提交的标识，返回提交状态</p>
-<h3 id="GlobalRollbackRequest"><a href="#GlobalRollbackRequest" class="headerlink" title="GlobalRollbackRequest"></a>GlobalRollbackRequest</h3><p>TM: 当在全局事务执行中，出现异常时，发起全局事务回滚</p>
+<ul>
+<li>GlobalRollbackRequest</li>
+</ul>
+<p>TM: 当在全局事务执行中，出现异常时，发起全局事务回滚</p>
 <p>TC: 根据全局事务查找对应的分支事务，执行branchRollbackRequest.</p>
-<h3 id="RM-相关事务请求"><a href="#RM-相关事务请求" class="headerlink" title="RM 相关事务请求"></a>RM 相关事务请求</h3><h4 id="BranchRegisterRequest"><a href="#BranchRegisterRequest" class="headerlink" title="BranchRegisterRequest"></a>BranchRegisterRequest</h4><p>RM:  在RM本地事务中，当connection提交的时候会去注册分支事务</p>
+<h3 id="RM-相关事务请求"><a href="#RM-相关事务请求" class="headerlink" title="RM 相关事务请求"></a>RM 相关事务请求</h3><ul>
+<li>BranchRegisterRequest</li>
+</ul>
+<p>RM:  在RM本地事务中，当connection提交的时候会去注册分支事务</p>
 <p>TC: 根据rowkey生成对应的锁记录，实现写隔离</p>
-<h4 id="BranchRollbackRequest"><a href="#BranchRollbackRequest" class="headerlink" title="BranchRollbackRequest"></a>BranchRollbackRequest</h4><p>RM: RM处理TC下发的 BranchRollbackRequest请求，删除本地的undolog日志</p>
+<ul>
+<li>BranchRollbackRequest</li>
+</ul>
+<p>RM: RM处理TC下发的 BranchRollbackRequest请求，删除本地的undolog日志</p>
 <p>TC: TC接受TM的rollback的决议或者判断全局事务已超时后，发起分支事务回滚</p>
-<h4 id="branchCommitRequest"><a href="#branchCommitRequest" class="headerlink" title="branchCommitRequest"></a>branchCommitRequest</h4><p>RM: 由TC发起，异步删除undolog日志，实际的做法是将二阶段提交的上下文放到队列中，定时任务会定时获取队列中的上下文来删除undolog日志</p>
+<ul>
+<li>BranchCommitRequest</li>
+</ul>
+<p>RM: 由TC发起，异步删除undolog日志，实际的做法是将二阶段提交的上下文放到队列中，定时任务会定时获取队列中的上下文来删除undolog日志</p>
 <p>TC: 当收到TM的全局事务提交请求后，发起分支事务提交</p>
 <h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><h4 id="RowKey-组成"><a href="#RowKey-组成" class="headerlink" title="RowKey 组成"></a>RowKey 组成</h4><p>xid:transactionId:branchID:tableName:pk:resourceId</p>
 <h3 id="判断锁是否获取成功"><a href="#判断锁是否获取成功" class="headerlink" title="判断锁是否获取成功"></a>判断锁是否获取成功</h3><ul>
@@ -208,7 +226,7 @@
 <p>回滚的时候用来对比事务相关的数据有没发生变化，如果发生改变，不能直接回滚</p>
 </li>
 </ul>
-<h4 id="beforeImage-amp-AfterImage生成逻辑"><a href="#beforeImage-amp-AfterImage生成逻辑" class="headerlink" title="beforeImage&amp;AfterImage生成逻辑"></a>beforeImage&amp;AfterImage生成逻辑</h4><ul>
+<h3 id="beforeImage-amp-AfterImage生成逻辑"><a href="#beforeImage-amp-AfterImage生成逻辑" class="headerlink" title="beforeImage&amp;AfterImage生成逻辑"></a>beforeImage&amp;AfterImage生成逻辑</h3><ul>
 <li><p>delete</p>
 <ul>
 <li><p>before</p>
@@ -268,8 +286,8 @@
 <li>回滚</li>
 </ul>
 <p>回滚失败，不会释放锁</p>
-<p><img src="https://gitee.com/laywin/projectpic/blob/master/seata001.png" alt="image-20231105223513558"></p>
-<h3 id="隔离"><a href="#隔离" class="headerlink" title="隔离"></a>隔离</h3><p><img src="https://gitee.com/laywin/projectpic/blob/master/seata002.png" alt="image-20231105223532965"></p>
+<p><img src="/2023/11/05/seata分布式事务/seata001.png" alt></p>
+<h3 id="隔离"><a href="#隔离" class="headerlink" title="隔离"></a>隔离</h3><p><img src="/2023/11/05/seata分布式事务/seata002.png" alt></p>
 <p>写隔离主要是通过全局锁进行隔离，注册分支事务的时候会尝试获取全局锁，全局锁获取成功，提交本地事务</p>
 
       
@@ -1403,11 +1421,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
+                <a href="javascript:void(0)" class="js-tag color5">日常挖码</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常挖码</a>
+                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
               </li>
              
               <li class="article-tag-list-item">
