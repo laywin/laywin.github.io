@@ -17,7 +17,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://laywin.github.io/2023/11/05/seata分布式事务/seata001.png">
 <meta property="og:image" content="http://laywin.github.io/2023/11/05/seata分布式事务/seata002.png">
-<meta property="og:updated_time" content="2023-11-05T14:56:12.849Z">
+<meta property="og:updated_time" content="2023-11-05T14:58:53.295Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="seata分布式事务">
 <meta name="twitter:description" content="seata是一个两阶段的分布式事务，由TM, TC, RM 构成，全局事务由TM发起，一阶段RM注册分支事务到TC, 二阶段由TM决定根据事务执行情况进行提交或者回滚（TC 后台通过全局事务是否超时，也能决定是否进行回滚） AT模式的优缺点 优点 接入成本低，代码侵入性弱，只需要加个注解搞定，写隔离，强一致性。  缺点 写隔离，强一致性会要求在全局事务执行期间锁定对应的事务资源, 对热点数据的锁定">
@@ -392,6 +392,15 @@
   
 <nav id="article-nav">
   
+    <a href="/2023/12/24/spring-hook/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          spring hook
+        
+      </div>
+    </a>
+  
   
     <a href="/2023/10/08/redis延迟队列/" id="article-nav-older" class="article-nav-link-wrap">
       <div class="article-nav-title">redis延迟队列</div>
@@ -607,19 +616,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">日志</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布书追踪</a>
+                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">apm</a>
+                <a href="javascript:void(0)" class="js-tag color2">xxljob</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -635,7 +640,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">xxljob</a>
+                <a href="javascript:void(0)" class="js-tag color1">分布书追踪</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">apm</a>
               </li>
             
             <div class="clearfix"></div>

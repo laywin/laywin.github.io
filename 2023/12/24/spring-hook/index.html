@@ -6,16 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://laywin.github.io">
-  <title>categories | laywin</title>
+  <title>spring hook | laywin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://laywin.github.io/categories/index.html">
+  <meta name="description" content="最近在排查一个拦截bean创建问题的时候，重新梳理了一下spring的相关hook. 其作用是当我们需要做一些框架层面的拦截的时候，需要确定将这个拦截加在什么位置。 SpringBoot 相关事件 ApplicationStartingEventspring boot 开始启动事件  ApplicationEnvironmentPreparedEventenvironment 准备事件  Appl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring hook">
+<meta property="og:url" content="http://laywin.github.io/2023/12/24/spring-hook/index.html">
 <meta property="og:site_name" content="laywin">
+<meta property="og:description" content="最近在排查一个拦截bean创建问题的时候，重新梳理了一下spring的相关hook. 其作用是当我们需要做一些框架层面的拦截的时候，需要确定将这个拦截加在什么位置。 SpringBoot 相关事件 ApplicationStartingEventspring boot 开始启动事件  ApplicationEnvironmentPreparedEventenvironment 准备事件  Appl">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2023-10-08T14:12:40.444Z">
+<meta property="og:updated_time" content="2023-12-24T15:06:53.001Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="spring hook">
+<meta name="twitter:description" content="最近在排查一个拦截bean创建问题的时候，重新梳理了一下spring的相关hook. 其作用是当我们需要做一些框架层面的拦截的时候，需要确定将这个拦截加在什么位置。 SpringBoot 相关事件 ApplicationStartingEventspring boot 开始启动事件  ApplicationEnvironmentPreparedEventenvironment 准备事件  Appl">
   
     <link rel="alternative" href="/atom.xml" title="laywin" type="application/atom+xml">
   
@@ -147,32 +150,143 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="page-undefined" class="article article-type-page " itemscope itemprop="blogPost">
+            <article id="post-spring-hook" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      categories
+      spring hook
     </h1>
   
 
 
   <a href="javascript:;" class="archive-article-date">
-      <i class="icon-smile icon"></i> 阅读数:<span id="/categories/index.html" class="pageViews">0</span>次
+      <i class="icon-smile icon"></i> 阅读数:<span id="/2023/12/24/spring-hook/" class="pageViews">0</span>次
   </a>
 
         
-        <a href="/categories/index.html" class="archive-article-date">
-  	<time datetime="2017-02-04T03:46:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-02-04</time>
+        <a href="/2023/12/24/spring-hook/" class="archive-article-date">
+  	<time datetime="2023-12-24T14:53:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-12-24</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>最近在排查一个拦截bean创建问题的时候，重新梳理了一下spring的相关hook. 其作用是当我们需要做一些框架层面的拦截的时候，需要确定将这个拦截加在什么位置。</p>
+<h3 id="SpringBoot-相关事件"><a href="#SpringBoot-相关事件" class="headerlink" title="SpringBoot 相关事件"></a>SpringBoot 相关事件</h3><ul>
+<li><p>ApplicationStartingEvent<br>spring boot 开始启动事件</p>
+</li>
+<li><p>ApplicationEnvironmentPreparedEvent<br>environment 准备事件</p>
+</li>
+<li><p>ApplicationContextInitializedEvent<br>applicationContext 初始化事件</p>
+</li>
+<li><p>ApplicationPreparedEvent<br>applicationContext 准备完毕事件</p>
+</li>
+<li><p>ApplicationStartedEvent<br>spring boot启动完成事件</p>
+</li>
+<li><p>ApplicationReadyEvent<br>spring boot 就绪事件</p>
+<p>在ApplicationPreparedEvent 和  ApplicationStartedEvent之间一个重要的操作就是applicationContext refresh即Bean的加载.</p>
+</li>
+<li><p>ApplicationFailedEvent</p>
+<p>spring boot启动失败事件</p>
+</li>
+<li><p>ContextClosedEvent</p>
+<p>applicationContext 关闭事件</p>
+</li>
+</ul>
+<h3 id="ApplicationContextInitializer"><a href="#ApplicationContextInitializer" class="headerlink" title="ApplicationContextInitializer"></a>ApplicationContextInitializer</h3><ul>
+<li>initialize<br>applicationContext准备完成之前的回调</li>
+</ul>
+<h3 id="ApplicationRunner"><a href="#ApplicationRunner" class="headerlink" title="ApplicationRunner"></a>ApplicationRunner</h3><ul>
+<li>run<br>spring boot 启动完成之后</li>
+</ul>
+<h3 id="CommandLineRunner"><a href="#CommandLineRunner" class="headerlink" title="CommandLineRunner"></a>CommandLineRunner</h3><ul>
+<li>run<br>spring boot 启动完成之后</li>
+</ul>
+<h3 id="EnvironmentPostProcessor"><a href="#EnvironmentPostProcessor" class="headerlink" title="EnvironmentPostProcessor"></a>EnvironmentPostProcessor</h3><p>加载配置文件，例如 spring 的 application.properties 是通过 ConfigFileApplicationListener 来加载的，apollo的配置文件是通过 ApolloApplicationContextInitializer 来加载的</p>
+<h3 id="BeanFactoryPostProcessor"><a href="#BeanFactoryPostProcessor" class="headerlink" title="BeanFactoryPostProcessor"></a>BeanFactoryPostProcessor</h3><ul>
+<li>postProcessBeanFactory</li>
+</ul>
+<p>在ApplicationContext的refresh中调用. 例如：PropertySourcesPlaceholderConfigurer会在这个hook里面解析注入的变量值</p>
+<h3 id="BeanDefinitionRegistryPostProcessor"><a href="#BeanDefinitionRegistryPostProcessor" class="headerlink" title="BeanDefinitionRegistryPostProcessor"></a>BeanDefinitionRegistryPostProcessor</h3><ul>
+<li>postProcessBeanDefinitionRegistry</li>
+</ul>
+<p>在ApplicationContext的refresh中调用. BeanDefinitionRegistryPostProcessor 继承了 BeanFactoryPostprocessor，比如 mybatis 的 ClassPathMapperScanner 就是一个 beanFactoryPostprocessor，用来扫描mapper生成BeanDefinition,放到容器中.</p>
+<h3 id="BeanPostProcessor"><a href="#BeanPostProcessor" class="headerlink" title="BeanPostProcessor"></a>BeanPostProcessor</h3><ul>
+<li>postProcessBeforeInitialization</li>
+<li>postProcessAfterInitialization</li>
+</ul>
+<p>拦截bean的初始化过程</p>
+<h3 id="InitializingBean"><a href="#InitializingBean" class="headerlink" title="InitializingBean"></a>InitializingBean</h3><ul>
+<li>afterPropertiesSet</li>
+</ul>
+<p>bean 初始化回调</p>
+<h3 id="InitMethod"><a href="#InitMethod" class="headerlink" title="InitMethod"></a>InitMethod</h3><ul>
+<li>@PostConstruct</li>
+</ul>
+<p>执行顺序在 afterPropertiesSet后面</p>
+<h3 id="InstantiationAwareBeanPostProcessor"><a href="#InstantiationAwareBeanPostProcessor" class="headerlink" title="InstantiationAwareBeanPostProcessor"></a>InstantiationAwareBeanPostProcessor</h3><ul>
+<li>postProcessBeforeInstantiation</li>
+<li>postProcessAfterInstantiation</li>
+<li>postProcessProperties</li>
+</ul>
+<p>InstantiationAwareBeanPostProcessor 继承了 BeanPostProcessor， 其回调返回的Object如果不是null，则后续通过BeanDefinition创建bean的过程不会执行。在PopulateBean的过程中, 优先级比BeanPostProcessor高(例如： 通过在p roperties设置之前，修改bean的状态来支持field注入), AutowiredAnnotationBeanPostProcessor 就是一个 InstantiationAwareBeanPostProcessor.</p>
+<h3 id="DestructionAwareBeanPostProcessor"><a href="#DestructionAwareBeanPostProcessor" class="headerlink" title="DestructionAwareBeanPostProcessor"></a>DestructionAwareBeanPostProcessor</h3><ul>
+<li>postProcessBeforeDestruction</li>
+</ul>
+<p>在bean销毁之前进行拦截</p>
+<h3 id="PreDestroy"><a href="#PreDestroy" class="headerlink" title="PreDestroy"></a>PreDestroy</h3><ul>
+<li>@PreDestroy</li>
+</ul>
+<p>拦截bean的销毁</p>
+<h3 id="MergedBeanDefinitionPostProcessor"><a href="#MergedBeanDefinitionPostProcessor" class="headerlink" title="MergedBeanDefinitionPostProcessor"></a>MergedBeanDefinitionPostProcessor</h3><ul>
+<li>postProcessMergedBeanDefinition</li>
+</ul>
+<p>InstantiationAwareBeanPostProcessor 继承了 BeanPostProcessor, 能够处理到BeanDefinition</p>
+<h3 id="BeanNameAware"><a href="#BeanNameAware" class="headerlink" title="BeanNameAware"></a>BeanNameAware</h3><ul>
+<li>setBeanName</li>
+</ul>
+<p>初始化bean的阶段（已设置properties）调用</p>
+<h3 id="BeanClassLoaderAware"><a href="#BeanClassLoaderAware" class="headerlink" title="BeanClassLoaderAware"></a>BeanClassLoaderAware</h3><ul>
+<li>setBeanClassLoader</li>
+</ul>
+<p>初始化bean的阶段（已设置properties）调用</p>
+<h3 id="BeanFactoryAware"><a href="#BeanFactoryAware" class="headerlink" title="BeanFactoryAware"></a>BeanFactoryAware</h3><ul>
+<li>setBeanFactory</li>
+</ul>
+<p>初始化bean的阶段（已设置properties）调用</p>
+<h3 id="常用拦截"><a href="#常用拦截" class="headerlink" title="常用拦截"></a>常用拦截</h3><ul>
+<li><p>需要注入propertySource</p>
+<p>实现EnvironmentPostProcessor，这个拦截会在收到 ApplicationEnvironmentPreparedEvent事件后执行</p>
+</li>
+<li><p>需要注册BeanDefinition</p>
+<p>实现BeanDefinitionRegistryPostProcessor</p>
+</li>
+<li><p>拦截BeanDefinition</p>
+<p>实现BeanFactoryPostProcessor或者MergedBeanDefinitionPostProcessor</p>
+</li>
+<li><p>拦截Bean的创建</p>
+<p>实现InstantiationAwareBeanPostProcessor</p>
+</li>
+<li><p>拦截Bean的初始化</p>
+<p>实现BeanPostProcessor</p>
+<p>注解@PostConstruct</p>
+</li>
+<li><p>拦截bean的销毁</p>
+<p>实现DestructionAwareBeanPostProcessor</p>
+<p>注解PreDestroy</p>
+</li>
+</ul>
+<h3 id="SpringBoot初始化顺序"><a href="#SpringBoot初始化顺序" class="headerlink" title="SpringBoot初始化顺序"></a>SpringBoot初始化顺序</h3><ul>
+<li>初始化environment</li>
+<li>初始化日志系统</li>
+<li>初始化applicationContext</li>
+<li>Refresh applicationContext</li>
+</ul>
+
       
 
       
@@ -256,7 +370,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://laywin.github.io/categories/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://laywin.github.io/2023/12/24/spring-hook/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -268,6 +382,16 @@
 </article>
 
   
+<nav id="article-nav">
+  
+  
+    <a href="/2023/11/05/seata分布式事务/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">seata分布式事务</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
 
 <aside class="wrap-side-operation">
     <div class="mod-side-operation">
@@ -287,6 +411,16 @@
 
 
 
+  
+  
+  
+
+  
+
+  
+
+  
+
 
 
   <div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
@@ -302,7 +436,7 @@ if(true){
   	repo: 'mycomments',
   	owner: 'laywin',
   	admin: ['laywin'],
-  	id: 'Sat Feb 04 2017 11:46:41 GMT+0800',
+  	id: 'Sun Dec 24 2023 22:53:55 GMT+0800',
   	distractionFreeMode: 'true'
 })
 gitalk.render('gitalk-container') 
@@ -330,7 +464,7 @@ gitalk.render('gitalk-container')
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
