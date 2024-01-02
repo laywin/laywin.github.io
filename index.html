@@ -159,11 +159,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2024/01/02/spring-如何解决循环依赖的问题/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2024/01/02/spring-如何解决循环依赖的问题/" class="archive-article-date">
   	<time datetime="2024-01-02T11:52:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-01-02</time>
@@ -174,7 +174,23 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>很古老的一个问题，面试可能问的比较多，最近在排查问题的时间专门去跟踪了一下.</p>
-<figure class="highlight plain"><figcaption><span>bean的创建流程``：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1. 实例化bean</span><br><span class="line"></span><br><span class="line">   bean new 出来之后会放入singletonFactories中，singletonFactories是遇到循环依赖后，用来创建Bean的</span><br><span class="line"></span><br><span class="line">2. 设置bean的property</span><br><span class="line"></span><br><span class="line">3. 调用bean生命周期hook</span><br><span class="line"></span><br><span class="line">完了之后bean会放入singletonObjects中.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">``举一个循环依赖的情况``：</span><br><span class="line"></span><br><span class="line">A依赖B, B依赖A</span><br><span class="line"></span><br><span class="line">首先创建Bean A.</span><br><span class="line"></span><br><span class="line">1. 实例化 Bean A</span><br><span class="line">2. 将Bean A 放入 singletonFactories</span><br><span class="line">3. 设置Bean A的property, 这时候会去找Bean B, 发现Bean B并没有创建，同样走Bean A实例化的流程</span><br><span class="line">4. 实例化 Bean B</span><br><span class="line">5. 将Bean B 放入 singletonFactories</span><br><span class="line">6. 设置Bean B的property, 这时候会去找Bean A, 下面我们看一下查找过程：</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">	protected Object getSingleton(String beanName, boolean allowEarlyReference) &#123;</span><br><span class="line">		// 看 singletonObjects 中有没，singletonObjects是完全初始化好的</span><br><span class="line">		Object singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">    // 如果查找的bean正在创建过程中，继续往下走</span><br><span class="line">		if (singletonObject == null &amp;&amp; isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">      // 看 earlySingletonObjects 中有没，earlySingletonObjects中的数据就是在这个方法后面放的</span><br><span class="line">			singletonObject = this.earlySingletonObjects.get(beanName);</span><br><span class="line">			if (singletonObject == null &amp;&amp; allowEarlyReference) &#123;</span><br><span class="line">        // 同步互斥</span><br><span class="line">				synchronized (this.singletonObjects) &#123;</span><br><span class="line">					// Consistent creation of early reference within full singleton lock</span><br><span class="line">					singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">					if (singletonObject == null) &#123;</span><br><span class="line">						singletonObject = this.earlySingletonObjects.get(beanName);</span><br><span class="line">						if (singletonObject == null) &#123;</span><br><span class="line">              // 注意 singletonFactories 中的数据在 bean new出来之后就会放</span><br><span class="line">							ObjectFactory&lt;?&gt; singletonFactory = this.singletonFactories.get(beanName);</span><br><span class="line">							if (singletonFactory != null) &#123;</span><br><span class="line">                // 将bean拿出来</span><br><span class="line">								singletonObject = singletonFactory.getObject();</span><br><span class="line">                // 放入 earlySingletonObjects 中</span><br><span class="line">								this.earlySingletonObjects.put(beanName, singletonObject);</span><br><span class="line">                // 从单例工厂中移除</span><br><span class="line">								this.singletonFactories.remove(beanName);</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		return singletonObject;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="要解答这个问题，需要首先知道spring-bean的创建流程："><a href="#要解答这个问题，需要首先知道spring-bean的创建流程：" class="headerlink" title="要解答这个问题，需要首先知道spring bean的创建流程："></a>要解答这个问题，需要首先知道spring bean的创建流程：</h3><ol>
+<li>实例化bean<br>bean new 出来之后会放入singletonFactories中，singletonFactories是遇到循环依赖后，用来创建Bean的</li>
+<li>设置bean的property</li>
+<li>调用bean生命周期hook</li>
+</ol>
+<p>完了之后bean会放入singletonObjects中.</p>
+<h3 id="举一个循环依赖的情况："><a href="#举一个循环依赖的情况：" class="headerlink" title="举一个循环依赖的情况："></a>举一个循环依赖的情况：</h3><p>A依赖B, B依赖A</p>
+<p>首先创建Bean A.</p>
+<ol>
+<li>实例化 Bean A</li>
+<li>将Bean A 放入 singletonFactories</li>
+<li>设置Bean A的property, 这时候会去找Bean B, 发现Bean B并没有创建，同样走Bean A实例化的流程</li>
+<li>实例化 Bean B</li>
+<li>将Bean B 放入 singletonFactories</li>
+<li>设置Bean B的property, 这时候会去找Bean A, 下面我们看一下查找过程：</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">getSingleton</span><span class="params">(String beanName, <span class="keyword">boolean</span> allowEarlyReference)</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 看 singletonObjects 中有没，singletonObjects是完全初始化好的</span></span><br><span class="line">	Object singletonObject = <span class="keyword">this</span>.singletonObjects.get(beanName);</span><br><span class="line">   <span class="comment">// 如果查找的bean正在创建过程中，继续往下走</span></span><br><span class="line">	<span class="keyword">if</span> (singletonObject == <span class="keyword">null</span> &amp;&amp; isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">     <span class="comment">// 看 earlySingletonObjects 中有没，earlySingletonObjects中的数据就是在这个方法后面放的</span></span><br><span class="line">		singletonObject = <span class="keyword">this</span>.earlySingletonObjects.get(beanName);</span><br><span class="line">		<span class="keyword">if</span> (singletonObject == <span class="keyword">null</span> &amp;&amp; allowEarlyReference) &#123;</span><br><span class="line">       <span class="comment">// 同步互斥</span></span><br><span class="line">			<span class="keyword">synchronized</span> (<span class="keyword">this</span>.singletonObjects) &#123;</span><br><span class="line">				<span class="comment">// Consistent creation of early reference within full singleton lock</span></span><br><span class="line">				singletonObject = <span class="keyword">this</span>.singletonObjects.get(beanName);</span><br><span class="line">				<span class="keyword">if</span> (singletonObject == <span class="keyword">null</span>) &#123;</span><br><span class="line">					singletonObject = <span class="keyword">this</span>.earlySingletonObjects.get(beanName);</span><br><span class="line">					<span class="keyword">if</span> (singletonObject == <span class="keyword">null</span>) &#123;</span><br><span class="line">             <span class="comment">// 注意 singletonFactories 中的数据在 bean new出来之后就会放</span></span><br><span class="line">						ObjectFactory&lt;?&gt; singletonFactory = <span class="keyword">this</span>.singletonFactories.get(beanName);</span><br><span class="line">						<span class="keyword">if</span> (singletonFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">               <span class="comment">// 将bean拿出来</span></span><br><span class="line">							singletonObject = singletonFactory.getObject();</span><br><span class="line">               <span class="comment">// 放入 earlySingletonObjects 中</span></span><br><span class="line">							<span class="keyword">this</span>.earlySingletonObjects.put(beanName, singletonObject);</span><br><span class="line">               <span class="comment">// 从单例工厂中移除</span></span><br><span class="line">							<span class="keyword">this</span>.singletonFactories.remove(beanName);</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> singletonObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>getSingleton 方法就是解决循环依赖的答案，在我们的例子中就是Bean B 在找Bean A的时候，其实Bean A并不是完全构造的，就是 Bean A的property还是设置完，但并不影响解决循环依赖.</p>
 
       
@@ -229,11 +245,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2023/12/24/spring-hook/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2023/12/24/spring-hook/" class="archive-article-date">
   	<time datetime="2023-12-24T14:53:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-12-24</time>
@@ -407,11 +423,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2023/11/05/seata分布式事务/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2023/11/05/seata分布式事务/" class="archive-article-date">
   	<time datetime="2023-11-05T14:31:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-11-05</time>
@@ -590,11 +606,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2023/10/08/redis延迟队列/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2023/10/08/redis延迟队列/" class="archive-article-date">
   	<time datetime="2023-10-08T14:42:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-10-08</time>
@@ -734,11 +750,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2023/09/20/HashedWheelTimer-时间轮/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2023/09/20/HashedWheelTimer-时间轮/" class="archive-article-date">
   	<time datetime="2023-09-20T08:17:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-09-20</time>
@@ -818,11 +834,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2021/07/23/xxljob/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2021/07/23/xxljob/" class="archive-article-date">
   	<time datetime="2021-07-23T06:03:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-23</time>
@@ -1006,11 +1022,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2021/06/17/redis事务-cas/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2021/06/17/redis事务-cas/" class="archive-article-date">
   	<time datetime="2021-06-17T12:32:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-06-17</time>
@@ -1105,11 +1121,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2021/06/11/sleuth集成zipkin/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2021/06/11/sleuth集成zipkin/" class="archive-article-date">
   	<time datetime="2021-06-11T06:53:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-06-11</time>
@@ -1191,11 +1207,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2021/06/10/基于sleuth的trace数据生成/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2021/06/10/基于sleuth的trace数据生成/" class="archive-article-date">
   	<time datetime="2021-06-10T10:21:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-06-10</time>
@@ -1289,11 +1305,11 @@
     </h1>
   
 
-
+<!-- 
   <a href="javascript:;" class="archive-article-date">
       <i class="icon-smile icon"></i> 阅读数:<span id="/2021/05/26/mybatis-sql输出小插曲/" class="pageViews">0</span>次
   </a>
-
+ -->
         
         <a href="/2021/05/26/mybatis-sql输出小插曲/" class="archive-article-date">
   	<time datetime="2021-05-26T12:44:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-26</time>
@@ -1519,15 +1535,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">日志</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">分布书追踪</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">apm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">日志</a>
               </li>
              
               <li class="article-tag-list-item">
