@@ -148,6 +148,76 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-spring-如何解决循环依赖的问题" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/01/02/spring-如何解决循环依赖的问题/">spring 如何解决循环依赖的问题</a>
+    </h1>
+  
+
+
+  <a href="javascript:;" class="archive-article-date">
+      <i class="icon-smile icon"></i> 阅读数:<span id="/2024/01/02/spring-如何解决循环依赖的问题/" class="pageViews">0</span>次
+  </a>
+
+        
+        <a href="/2024/01/02/spring-如何解决循环依赖的问题/" class="archive-article-date">
+  	<time datetime="2024-01-02T11:52:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-01-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>很古老的一个问题，面试可能问的比较多，最近在排查问题的时间专门去跟踪了一下.</p>
+<figure class="highlight plain"><figcaption><span>bean的创建流程``：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1. 实例化bean</span><br><span class="line"></span><br><span class="line">   bean new 出来之后会放入singletonFactories中，singletonFactories是遇到循环依赖后，用来创建Bean的</span><br><span class="line"></span><br><span class="line">2. 设置bean的property</span><br><span class="line"></span><br><span class="line">3. 调用bean生命周期hook</span><br><span class="line"></span><br><span class="line">完了之后bean会放入singletonObjects中.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">``举一个循环依赖的情况``：</span><br><span class="line"></span><br><span class="line">A依赖B, B依赖A</span><br><span class="line"></span><br><span class="line">首先创建Bean A.</span><br><span class="line"></span><br><span class="line">1. 实例化 Bean A</span><br><span class="line">2. 将Bean A 放入 singletonFactories</span><br><span class="line">3. 设置Bean A的property, 这时候会去找Bean B, 发现Bean B并没有创建，同样走Bean A实例化的流程</span><br><span class="line">4. 实例化 Bean B</span><br><span class="line">5. 将Bean B 放入 singletonFactories</span><br><span class="line">6. 设置Bean B的property, 这时候会去找Bean A, 下面我们看一下查找过程：</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">	protected Object getSingleton(String beanName, boolean allowEarlyReference) &#123;</span><br><span class="line">		// 看 singletonObjects 中有没，singletonObjects是完全初始化好的</span><br><span class="line">		Object singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">    // 如果查找的bean正在创建过程中，继续往下走</span><br><span class="line">		if (singletonObject == null &amp;&amp; isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">      // 看 earlySingletonObjects 中有没，earlySingletonObjects中的数据就是在这个方法后面放的</span><br><span class="line">			singletonObject = this.earlySingletonObjects.get(beanName);</span><br><span class="line">			if (singletonObject == null &amp;&amp; allowEarlyReference) &#123;</span><br><span class="line">        // 同步互斥</span><br><span class="line">				synchronized (this.singletonObjects) &#123;</span><br><span class="line">					// Consistent creation of early reference within full singleton lock</span><br><span class="line">					singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">					if (singletonObject == null) &#123;</span><br><span class="line">						singletonObject = this.earlySingletonObjects.get(beanName);</span><br><span class="line">						if (singletonObject == null) &#123;</span><br><span class="line">              // 注意 singletonFactories 中的数据在 bean new出来之后就会放</span><br><span class="line">							ObjectFactory&lt;?&gt; singletonFactory = this.singletonFactories.get(beanName);</span><br><span class="line">							if (singletonFactory != null) &#123;</span><br><span class="line">                // 将bean拿出来</span><br><span class="line">								singletonObject = singletonFactory.getObject();</span><br><span class="line">                // 放入 earlySingletonObjects 中</span><br><span class="line">								this.earlySingletonObjects.put(beanName, singletonObject);</span><br><span class="line">                // 从单例工厂中移除</span><br><span class="line">								this.singletonFactories.remove(beanName);</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		return singletonObject;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>getSingleton 方法就是解决循环依赖的答案，在我们的例子中就是Bean B 在找Bean A的时候，其实Bean A并不是完全构造的，就是 Bean A的property还是设置完，但并不影响解决循环依赖.</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2024/01/02/spring-如何解决循环依赖的问题/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-spring-hook" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1283,78 +1353,6 @@
 
 
   
-    <article id="post-为什么我的日志输入无效" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/05/26/为什么我的日志输入无效/">为什么我的日志输入无效</a>
-    </h1>
-  
-
-
-  <a href="javascript:;" class="archive-article-date">
-      <i class="icon-smile icon"></i> 阅读数:<span id="/2021/05/26/为什么我的日志输入无效/" class="pageViews">0</span>次
-  </a>
-
-        
-        <a href="/2021/05/26/为什么我的日志输入无效/" class="archive-article-date">
-  	<time datetime="2021-05-26T12:00:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>背景是这样的，我写了一个spring boot的应用监听器，但是部分日志无法输出，直接上代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplicationListener</span> <span class="keyword">implements</span> <span class="title">SmartApplicationListener</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> Logger logger = LoggerFactory.getLogger(getClass());</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">supportsEventType</span><span class="params">(Class&lt;? extends ApplicationEvent&gt; eventType)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> ApplicationStartingEvent<span class="class">.<span class="keyword">class</span>.<span class="title">isAssignableFrom</span>(<span class="title">eventType</span>)</span></span><br><span class="line"><span class="class">			   || <span class="title">ApplicationStartedEvent</span>.<span class="title">class</span>.<span class="title">isAssignableFrom</span>(<span class="title">eventType</span>)</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onApplicationEvent</span><span class="params">(ApplicationEvent event)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (event <span class="keyword">instanceof</span> ApplicationStartingEvent) &#123;</span><br><span class="line">			logger.info(<span class="string">"application starting"</span>);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (event <span class="keyword">instanceof</span> ApplicationStartedEvent) &#123;</span><br><span class="line">			logger.info(<span class="string">"application started"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>日志输出如下：</p>
-        
-          <a class="article-more-a" href="/2021/05/26/为什么我的日志输入无效/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/05/26/为什么我的日志输入无效/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1369,7 +1367,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2023 laywin
+    		&copy; 2024 laywin
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -1513,6 +1511,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">日常挖码</a>
               </li>
              
@@ -1521,11 +1523,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">源码分析</a>
+                <a href="javascript:void(0)" class="js-tag color1">分布书追踪</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">xxljob</a>
+                <a href="javascript:void(0)" class="js-tag color4">apm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1541,11 +1543,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布书追踪</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">apm</a>
+                <a href="javascript:void(0)" class="js-tag color2">xxljob</a>
               </li>
             
             <div class="clearfix"></div>
